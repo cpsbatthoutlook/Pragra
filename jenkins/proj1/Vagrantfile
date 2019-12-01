@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.provision "shell", path: "runglobal.sh"
+
+  ##Specify master as primary
+  config.vm.define "jenkins-master", primary:true do |jenkins_master|
+    jenkins_master.vm.hostname = "jenkins-master"
+    jenkins_master.vm.network "private_network", ip: "192.168.56.101"
+    jenkins_master.vm.network "forwarded_port", guest: 8080 , host: 5000
+    jenkins_master.vm.synced_folder ".", "/jenkins"
+    jenkins_master.vm.provision "shell" , path: "master.sh"
+     config.vm.provider :virtualbox do |vb|
+       vb.customize ["modifyvm", :id, "--memory", "2048"]
+       vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end  
+  end
+
+   #Autostart disabled as multi-machine model
+  config.vm.define "jenkin-node1", autostart: false do |node1|
+    node1.vm.hostname = "jenkin-node1"
+    node1.vm.network "private_network", ip: "192.168.56.102"
+    # node1.vm.provision "shell" , path: "master.sh"
+     config.vm.provider :virtualbox do |vb|
+       vb.customize ["modifyvm", :id, "--memory", "512"]
+    end  
+  end
+
+   #Autostart disabled as multi-machine model
+  config.vm.define "jenkins-node2", autostart: false do |node2|
+    node2.vm.hostname = "app2"
+    node2.vm.network "private_network", ip: "192.168.56.103"
+    # node2.vm.provision "shell" , path: "master.sh"
+    config.vm.provider :virtualbox do |vb|
+       vb.customize ["modifyvm", :id, "--memory", "512"]
+    end  
+  end
+
+
+end
